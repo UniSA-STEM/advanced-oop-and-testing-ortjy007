@@ -7,15 +7,24 @@
 # Academic Misconduct policy.
 #
 from abc import ABC, abstractmethod
-from datetime import datetime, date
+from datetime import date
 import re
+import pickle
+
 import date_validation
+import print_report
+import reports
+from pprint import pprint
 
 
 class Animal(ABC):
     """
+    100% StarDust: Zoo Management Software (ZMS)
+    Created ByteWise Consulting.
+    All rights unreserved.
+
     Abstract Animal class to be used as the parent class for the
-    zoo project..
+    zoo project...
     Class attributes:
     DIET: dictionary with the 3 main diets, additional information
     allowed in the child classes.
@@ -36,6 +45,7 @@ class Animal(ABC):
     +dob @property getter + setter
 
     Abstract methods:
+    +health_report
     +actions
     +behaviours
     +traits
@@ -46,31 +56,41 @@ class Animal(ABC):
     ANIMAL_ID = 0
     ANIMAL_INVENTORY = []
 
-    def __init__(self, name: str, species: str, diet=1, dob='2020-01-01'):
+    def __init__(self, name: str, species: str, diet=1, dob='2020-01-01',
+                 health=True, injury=False, treatment=False):
         self.__name = name
         self.__species = species
         self.__dob = dob
         self.__diet = diet
+        self.__health = health
+        self.__injury = injury
+        self.__treatment = treatment
         self.__age = 0
         self.ANIMAL_ID += 1
         Animal.ANIMAL_INVENTORY.append(self)
-        print('Created ByteWise Consulting, all rights unreserved :).')
+        print('100% StarDust: Zoo Management Software (ZMS).\n')
 
     def __str__(self) -> str:
         # Calculating age from DoB
         today = date.today()
-        tmp_age = date(int(self.__dob[0:4]), int(self.__dob[5:7]), int(self.__dob[8:]))
+        tmp_age = date(int(self.__dob[0:4]),
+                       int(self.__dob[5:7]),
+                       int(self.__dob[8:]))
         self.__age = today.year - tmp_age.year
 
-        return (f'Name:{self.__name}\n'
+        return (f'Name: {self.__name}\n'
                 f'Species: \x1B[3m{self.__species}\x1B[0m\n'
                 f'Diet: {Animal.DIET[self.__diet]}\n'
+                f'Health: {self.__health}\n'
+                f'Injuries: {self.__injury}\n'
+                f'In Treatment: {self.__treatment}\n'
                 f'DoB: {self.__dob}\n'
                 f'Age: {self.__age}\n'
                 f'Animal ID: {self.ANIMAL_ID:04d}\n')
 
     def __repr__(self):
-        return f'Animal(name= {self.__name}, species= {self.__species}, diet= {1}, dob= {'2020-01-01'})'
+        return (f'Animal(name= {self.__name}, species= {self.__species}, '
+                f'diet= {1}, dob= {'2020-01-01'}, health= {True}, injury= {False}, treatment= {False})')
 
     @property
     def name(self) -> str:
@@ -186,6 +206,37 @@ class Animal(ABC):
                 print("Invalid input. Please enter a valid number.\n")
                 diet = input(f'Input needs to be between 1 and {no_diets}: ')
 
+    @property
+    def health(self) -> bool:
+        """health property"""
+        return self.__health
+
+    @health.setter
+    def health(self, health: bool) -> None:
+        self.__health = health
+
+    @property
+    def injury(self) -> bool:
+        """injury property"""
+        return self.__injury
+
+    @injury.setter
+    def injury(self, injury: bool) -> None:
+        self.__injury = injury
+
+    @property
+    def treatment(self) -> bool:
+        """treatment property"""
+        return self.__treatment
+
+    @treatment.setter
+    def treatment(self, treatment: bool) -> None:
+        self.__treatment = treatment
+
+    @abstractmethod
+    def health_comments(self):
+        pass
+
     @abstractmethod
     def actions(self):
         pass
@@ -197,3 +248,719 @@ class Animal(ABC):
     @abstractmethod
     def traits(self):
         pass
+
+
+class Mammal(Animal):
+    CLASS = 'Mammalia'
+    ORIGIN = {1: 'Wild Captured',
+              2: 'Bred Locally',
+              3: 'Bred Elsewhere',
+              4: 'On loan'}
+    MAMMAL_ID = 0
+    MAMMAL_INVENTORY = []
+
+    def __init__(self, name, species, diet, dob, health, injury, treatment, origin=2):
+        super().__init__(name, species, diet, dob, health, injury, treatment)
+        self.__class_ = Mammal.CLASS
+        self.__origin = origin
+        self.__dietary_comments = {}
+        self.__health_comments = {}
+        self.__actions = []
+        self.__behaviours = []
+        self.__traits = []
+        self.__own_sound = ''
+        self.__sleep = False
+        self.MAMMAL_ID += 1
+        Mammal.MAMMAL_INVENTORY.append(self)
+
+    def __str__(self) -> str:
+        return (f'Class: {Mammal.CLASS}\n'
+                f'{super().__str__()}'
+                f'Mammal ID: {self.MAMMAL_ID:04d}\n'
+                f'Origin: {Mammal.ORIGIN[int(self.__origin)]}')
+
+    def __repr__(self):
+        return (f'Mammal(name= {self.name},'
+                f'species= {self.species},'
+                f'diet= {1},'
+                f'dob= {'2020-01-01'},'
+                f'health = {2},'
+                f'injury = {False},'
+                f'treatment = {True},'
+                f'origin= {2})')
+
+    @property
+    def origin(self) -> int:
+        """Origin property"""
+        return self.__origin
+
+    @origin.setter
+    def origin(self, origin: int) -> None:
+        """
+        Validating origin input as per origin list.
+        :param origin: int
+        :return: None
+        """
+
+        # Identifying the number of origins
+        no_origins = len(Mammal.ORIGIN)
+        print()
+
+        # Printing origin dictionary to assist user selection
+        for key, value in Mammal.ORIGIN.items():
+            print(f'{key}:{value}')
+
+        # Input validation using while loop and try/except forms
+        while True:
+            try:
+                if origin == 0 or origin == '' or type(origin) == True:
+                    origin = input(f'Please enter a valid input.\n'
+                                   f'Input needs to be between 1 and {no_origins}: ')
+                origin = int(origin)
+                if 1 <= origin <= no_origins:
+                    print(f"{self.name}'s origin has been changed to {Mammal.ORIGIN[origin]}\n")
+                    self.__origin = origin
+                    # If successful, exit
+                    break
+                else:
+                    origin = input(f'Please enter a valid input.\n'
+                                   f'Input needs to be between 1 and {no_origins}: ')
+            except ValueError:
+                print(f"Error.\nOnly integers between 1 and {no_origins} are valid.")
+                origin = input('Please try again: ')
+
+    @property
+    def own_sound(self) -> str:
+        """Own sound property"""
+        return self.__own_sound
+
+    @own_sound.setter
+    def own_sound(self, sound: str) -> None:
+        """
+        Mammal's own sound
+        :param sound: str
+        :return: None
+        """
+        self.__own_sound = sound
+
+    @property
+    def sleeping(self) -> bool:
+        """Sleeping property"""
+        return self.__sleep
+
+    @sleeping.setter
+    def sleeping(self, value) -> None:
+        """
+        Mammal's sleeping status
+        :return: None
+        """
+        if value:
+            print(f'{self.name} is awake\n'
+                  f'{self.__own_sound}')
+        else:
+            print(f'{self.name} is asleep\n'
+                  f'zzzzzzzz')
+        self.__sleep = value
+
+    def dietary_comments(self):
+        """
+        Dietary requirements
+        A copy of the file as a dictionary is saved externally
+        :return: None
+        """
+        self.__dietary_comments = reports.basic_report('Dietary Requirements',
+                                                       self.name,
+                                                       {})
+        # Writing an external file for reference
+        file_name = f'{self.name}_dietary_comments'
+        with open(file_name, 'wb') as f:
+            pickle.dump(self.__dietary_comments, f)
+
+    def print_dietary_comments(self) -> None:
+        """
+        Printing dietary comments on file
+        :return: None
+        """
+        print(f"{self.name}'s dietary requirement:")
+        print_report.print_b(self.__dietary_comments)
+
+    def health_comments(self) -> None:
+        """
+        Health requirements
+        :return: None
+        """
+        health_format = reports.formats_available(3)
+        self.__health_comments = reports.extended_report(self.name, 3, 'health report')
+
+        # Writing an external file for reference
+        file_name = f'{self.name}_health_report'
+        with open(file_name, 'wb') as f:
+            pickle.dump(self.__health_comments, f)
+
+    def print_health_report(self) -> None:
+        """
+        Printing health report comments on file
+        :return: None
+        """
+        print(f"{self.name}'s health report:")
+        print_report.print_b(self.__health_comments)
+
+    def actions(self):
+        """
+        Mammal actions
+        """
+        self.__actions = ['give birth to live of springs']
+        print(f'{self.__actions }')
+
+    def behaviours(self):
+        """
+        Mammal behaviours
+        """
+        self.__behaviours = ['social bonding', 'communications through '
+                             'vocalizations and scent', 'territorial']
+        print(f'{self.__behaviours}')
+
+    def traits(self):
+        """
+        Mammal traits
+        """
+        self.__traits = ['endoterm', 'have hair or fur',
+                         'have three middle ear bones']
+        print(f'{self.__traits}')
+
+
+class Aves(Animal):
+    CLASS = 'Aves'
+    ORIGIN = {1: 'Wild Captured',
+              2: 'Bred Locally',
+              3: 'Bred Elsewhere',
+              4: 'On loan'}
+    AVES_ID = 0
+    AVES_INVENTORY = []
+
+    def __init__(self, name, species, diet, dob, health, injury, treatment, origin=2):
+        super().__init__(name, species, diet, dob, health, injury, treatment)
+        self.__class_ = Aves.CLASS
+        self.__origin = origin
+        self.__dietary_comments = {}
+        self.__health_comments = {}
+        self.__actions = []
+        self.__behaviours = []
+        self.__traits = []
+        self.__own_sound = ''
+        self.__sleep = False
+        self.AVES_ID += 1
+        Aves.AVES_INVENTORY.append(self)
+
+    def __str__(self) -> str:
+        return (f'Class: {Aves.CLASS}\n'
+                f'{super().__str__()}'
+                f'Reptile ID: {self.AVES_ID:04d}\n'
+                f'Origin: {Aves.ORIGIN[int(self.__origin)]}')
+
+    def __repr__(self):
+        return (f'Aves (name= {self.name},'
+                f'species= {self.species},'
+                f'diet= {1},'
+                f'dob= {'2020-01-01'},'
+                f'health = {2},'
+                f'injury = {False},'
+                f'treatment = {True},'
+                f'origin= {2})')
+
+    @property
+    def origin(self) -> int:
+        """Origin property"""
+        return self.__origin
+
+    @origin.setter
+    def origin(self, origin: int) -> None:
+        """
+        Validating origin input as per origin list.
+        :param origin: int
+        :return: None
+        """
+
+        # Identifying the number of origins
+        no_origins = len(Aves.ORIGIN)
+        print()
+
+        # Printing origin dictionary to assist user selection
+        for key, value in Aves.ORIGIN.items():
+            print(f'{key}:{value}')
+
+        # Input validation using while loop and try/except forms
+        while True:
+            try:
+                if origin == 0 or origin == '' or type(origin) == True:
+                    origin = input(f'Please enter a valid input.\n'
+                                   f'Input needs to be between 1 and {no_origins}: ')
+                origin = int(origin)
+                if 1 <= origin <= no_origins:
+                    print(f"{self.name}'s origin has been changed to {Aves.ORIGIN[origin]}\n")
+                    self.__origin = origin
+                    # If successful, exit
+                    break
+                else:
+                    origin = input(f'Please enter a valid input.\n'
+                                   f'Input needs to be between 1 and {no_origins}: ')
+            except ValueError:
+                print(f"Error.\nOnly integers between 1 and {no_origins} are valid.")
+                origin = input('Please try again: ')
+
+    @property
+    def own_sound(self) -> str:
+        """Own sound property"""
+        return self.__own_sound
+
+    @own_sound.setter
+    def own_sound(self, sound: str) -> None:
+        """
+        Aves's own sound
+        :param sound: str
+        :return: None
+        """
+        self.__own_sound = sound
+
+    @property
+    def sleeping(self) -> bool:
+        """Sleeping property"""
+        return self.__sleep
+
+    @sleeping.setter
+    def sleeping(self, value) -> None:
+        """
+        Aves's sleeping status
+        :return: None
+        """
+        if value:
+            print(f'{self.name} is awake\n'
+                  f'{self.__own_sound}')
+        else:
+            print(f'{self.name} is asleep\n'
+                  f'zzzzzzzz')
+        self.__sleep = value
+
+    def dietary_comments(self):
+        """
+        Dietary requirements
+        A copy of the file as a dictionary is saved externally
+        :return: None
+        """
+        self.__dietary_comments = reports.basic_report('Dietary Requirements',
+                                                       self.name,
+                                                       {})
+        # Writing an external file for reference
+        file_name = f'{self.name}_dietary_comments'
+        with open(file_name, 'wb') as f:
+            pickle.dump(self.__dietary_comments, f)
+
+    def print_dietary_comments(self) -> None:
+        """
+        Printing dietary comments on file
+        :return: None
+        """
+        print(f"{self.name}'s dietary requirement:")
+        print_report.print_b(self.__dietary_comments)
+
+    def health_comments(self) -> None:
+        """
+        Health requirements
+        :return: None
+        """
+        health_format = reports.formats_available(3)
+        self.__health_comments = reports.extended_report(self.name, 3, 'health report')
+
+        # Writing an external file for reference
+        file_name = f'{self.name}_health_report'
+        with open(file_name, 'wb') as f:
+            pickle.dump(self.__health_comments, f)
+
+    def print_health_report(self) -> None:
+        """
+        Printing health report comments on file
+        :return: None
+        """
+        print(f"{self.name}'s health report:")
+        print_report.print_b(self.__health_comments)
+
+    def actions(self):
+        """
+        Aves actions
+        """
+        self.__actions = ['flight', 'perching', 'preening' ]
+        print(f'{self.__actions }')
+
+    def behaviours(self):
+        """
+        Aves behaviours
+        """
+        self.__behaviours = ['cooperative breeding', 'social learning'
+                             'pair bonds', 'flocking']
+        print(f'{self.__behaviours}')
+
+    def traits(self):
+        """
+        Aves traits
+        """
+        self.__traits = ['have feathers', 'beak without teeth',
+                         'wings', 'bipedal']
+        print(f'{self.__traits}')
+
+
+class Reptilia(Animal):
+    CLASS = 'Reptilia'
+    ORIGIN = {1: 'Wild Captured',
+              2: 'Bred Locally',
+              3: 'Bred Elsewhere',
+              4: 'On loan'}
+    REPTILE_ID = 0
+    REPTILE_INVENTORY = []
+
+    def __init__(self, name, species, diet, dob, health, injury, treatment, origin=2):
+        super().__init__(name, species, diet, dob, health, injury, treatment)
+        self.__class_ = Reptilia.CLASS
+        self.__origin = origin
+        self.__dietary_comments = {}
+        self.__health_comments = {}
+        self.__actions = []
+        self.__behaviours = []
+        self.__traits = []
+        self.__own_sound = ''
+        self.__sleep = False
+        self.REPTILE_ID += 1
+        Reptilia.REPTILE_INVENTORY.append(self)
+
+    def __str__(self) -> str:
+        return (f'Class: {Reptilia.CLASS}\n'
+                f'{super().__str__()}'
+                f'Reptile ID: {self.REPTILE_ID:04d}\n'
+                f'Origin: {Reptilia.ORIGIN[int(self.__origin)]}')
+
+    def __repr__(self):
+        return (f'Reptilia(name= {self.name},'
+                f'species= {self.species},'
+                f'diet= {1},'
+                f'dob= {'2020-01-01'},'
+                f'health = {2},'
+                f'injury = {False},'
+                f'treatment = {True},'
+                f'origin= {2})')
+
+    @property
+    def origin(self) -> int:
+        """Origin property"""
+        return self.__origin
+
+    @origin.setter
+    def origin(self, origin: int) -> None:
+        """
+        Validating origin input as per origin list.
+        :param origin: int
+        :return: None
+        """
+
+        # Identifying the number of origins
+        no_origins = len(Reptilia.ORIGIN)
+        print()
+
+        # Printing origin dictionary to assist user selection
+        for key, value in Reptilia.ORIGIN.items():
+            print(f'{key}:{value}')
+
+        # Input validation using while loop and try/except forms
+        while True:
+            try:
+                if origin == 0 or origin == '' or type(origin) == True:
+                    origin = input(f'Please enter a valid input.\n'
+                                   f'Input needs to be between 1 and {no_origins}: ')
+                origin = int(origin)
+                if 1 <= origin <= no_origins:
+                    print(f"{self.name}'s origin has been changed to {Reptilia.ORIGIN[origin]}\n")
+                    self.__origin = origin
+                    # If successful, exit
+                    break
+                else:
+                    origin = input(f'Please enter a valid input.\n'
+                                   f'Input needs to be between 1 and {no_origins}: ')
+            except ValueError:
+                print(f"Error.\nOnly integers between 1 and {no_origins} are valid.")
+                origin = input('Please try again: ')
+
+    @property
+    def own_sound(self) -> str:
+        """Own sound property"""
+        return self.__own_sound
+
+    @own_sound.setter
+    def own_sound(self, sound: str) -> None:
+        """
+        Reptilia's own sound
+        :param sound: str
+        :return: None
+        """
+        self.__own_sound = sound
+
+    @property
+    def sleeping(self) -> bool:
+        """Sleeping property"""
+        return self.__sleep
+
+    @sleeping.setter
+    def sleeping(self, value) -> None:
+        """
+        Reptilia's sleeping status
+        :return: None
+        """
+        if value:
+            print(f'{self.name} is awake\n'
+                  f'{self.__own_sound}')
+        else:
+            print(f'{self.name} is asleep\n'
+                  f'zzzzzzzz')
+        self.__sleep = value
+
+    def dietary_comments(self):
+        """
+        Dietary requirements
+        A copy of the file as a dictionary is saved externally
+        :return: None
+        """
+        self.__dietary_comments = reports.basic_report('Dietary Requirements',
+                                                       self.name,
+                                                       {})
+        # Writing an external file for reference
+        file_name = f'{self.name}_dietary_comments'
+        with open(file_name, 'wb') as f:
+            pickle.dump(self.__dietary_comments, f)
+
+    def print_dietary_comments(self) -> None:
+        """
+        Printing dietary comments on file
+        :return: None
+        """
+        print(f"{self.name}'s dietary requirement:")
+        print_report.print_b(self.__dietary_comments)
+
+    def health_comments(self) -> None:
+        """
+        Health requirements
+        :return: None
+        """
+        health_format = reports.formats_available(3)
+        self.__health_comments = reports.extended_report(self.name, 3, 'health report')
+
+        # Writing an external file for reference
+        file_name = f'{self.name}_health_report'
+        with open(file_name, 'wb') as f:
+            pickle.dump(self.__health_comments, f)
+
+    def print_health_report(self) -> None:
+        """
+        Printing health report comments on file
+        :return: None
+        """
+        print(f"{self.name}'s health report:")
+        print_report.print_b(self.__health_comments)
+
+    def actions(self):
+        """
+        Reptile actions
+        """
+        self.__actions = ['aggressive hunters', 'threat displays', 'physical defense']
+        print(f'{self.__actions}')
+
+    def behaviours(self):
+        """
+        Reptile behaviours
+        """
+        self.__behaviours = ['thermoregulation', 'defensive displays'
+                                                 'mostly solitary', 'group hibernation']
+        print(f'{self.__behaviours}')
+
+    def traits(self):
+        """
+        Reptile traits
+        """
+        self.__traits = ['ectothermic', 'dry-scaly skin',
+                         'have lungs for breathing', 'tetrapods']
+        print(f'{self.__traits}')
+
+
+class Ctenophora(Animal):
+    CLASS = 'Ctenophora'
+    ORIGIN = {1: 'Wild Captured',
+              2: 'Bred Locally',
+              3: 'Bred Elsewhere',
+              4: 'On loan'}
+    CTENOPHORA_ID = 0
+    CTENOPHORA_INVENTORY = []
+
+    def __init__(self, name, species, diet, dob, health, injury, treatment, origin=2):
+        super().__init__(name, species, diet, dob, health, injury, treatment)
+        self.__class_ = Ctenophora.CLASS
+        self.__origin = origin
+        self.__dietary_comments = {}
+        self.__health_comments = {}
+        self.__actions = []
+        self.__behaviours = []
+        self.__traits = []
+        self.__own_sound = ''
+        self.__sleep = False
+        self.CTENOPHORA_ID += 1
+        Ctenophora.CTENOPHORA_INVENTORY.append(self)
+
+    def __str__(self) -> str:
+        return (f'Class: {Ctenophora.CLASS}\n'
+                f'{super().__str__()}'
+                f'Ctenophora ID: {self.CTENOPHORA_ID:04d}\n'
+                f'Origin: {Ctenophora.ORIGIN[int(self.__origin)]}')
+
+    def __repr__(self):
+        return (f'Ctenophora(name= {self.name},'
+                f'species= {self.species},'
+                f'diet= {1},'
+                f'dob= {'2020-01-01'},'
+                f'health = {2},'
+                f'injury = {False},'
+                f'treatment = {True},'
+                f'origin= {2})')
+
+    @property
+    def origin(self) -> int:
+        """Origin property"""
+        return self.__origin
+
+    @origin.setter
+    def origin(self, origin: int) -> None:
+        """
+        Validating origin input as per origin list.
+        :param origin: int
+        :return: None
+        """
+
+        # Identifying the number of origins
+        no_origins = len(Ctenophora.ORIGIN)
+        print()
+
+        # Printing origin dictionary to assist user selection
+        for key, value in Ctenophora.ORIGIN.items():
+            print(f'{key}:{value}')
+
+        # Input validation using while loop and try/except forms
+        while True:
+            try:
+                if origin == 0 or origin == '' or type(origin) == True:
+                    origin = input(f'Please enter a valid input.\n'
+                                   f'Input needs to be between 1 and {no_origins}: ')
+                origin = int(origin)
+                if 1 <= origin <= no_origins:
+                    print(f"{self.name}'s origin has been changed to {Ctenophora.ORIGIN[origin]}\n")
+                    self.__origin = origin
+                    # If successful, exit
+                    break
+                else:
+                    origin = input(f'Please enter a valid input.\n'
+                                   f'Input needs to be between 1 and {no_origins}: ')
+            except ValueError:
+                print(f"Error.\nOnly integers between 1 and {no_origins} are valid.")
+                origin = input('Please try again: ')
+
+    @property
+    def own_sound(self) -> str:
+        """Own sound property"""
+        return self.__own_sound
+
+    @own_sound.setter
+    def own_sound(self, sound: str) -> None:
+        """
+        Ctenophora's own sound
+        :param sound: str
+        :return: None
+        """
+        self.__own_sound = sound
+
+    @property
+    def sleeping(self) -> bool:
+        """Sleeping property"""
+        return self.__sleep
+
+    @sleeping.setter
+    def sleeping(self, value) -> None:
+        """
+        Ctenophora's sleeping status
+        :return: None
+        """
+        if value:
+            print(f'{self.name} is awake\n'
+                  f'{self.__own_sound}')
+        else:
+            print(f'{self.name} is asleep\n'
+                  f'zzzzzzzz')
+        self.__sleep = value
+
+    def dietary_comments(self):
+        """
+        Dietary requirements
+        A copy of the file as a dictionary is saved externally
+        :return: None
+        """
+        self.__dietary_comments = reports.basic_report('Dietary Requirements',
+                                                       self.name,
+                                                       {})
+        # Writing an external file for reference
+        file_name = f'{self.name}_dietary_comments'
+        with open(file_name, 'wb') as f:
+            pickle.dump(self.__dietary_comments, f)
+
+    def print_dietary_comments(self) -> None:
+        """
+        Printing dietary comments on file
+        :return: None
+        """
+        print(f"{self.name}'s dietary requirement:")
+        print_report.print_b(self.__dietary_comments)
+
+    def health_comments(self) -> None:
+        """
+        Health requirements
+        :return: None
+        """
+        health_format = reports.formats_available(3)
+        self.__health_comments = reports.extended_report(self.name, 3, 'health report')
+
+        # Writing an external file for reference
+        file_name = f'{self.name}_health_report'
+        with open(file_name, 'wb') as f:
+            pickle.dump(self.__health_comments, f)
+
+    def print_health_report(self) -> None:
+        """
+        Printing health report comments on file
+        :return: None
+        """
+        print(f"{self.name}'s health report:")
+        print_report.print_b(self.__health_comments)
+
+    def actions(self):
+        """
+        Ctenophora actions
+        """
+        self.__actions = ['cilia-powered movement', 'maintain orientation', 'passive drifting']
+        print(f'{self.__actions}')
+
+    def behaviours(self):
+        """
+        Ctenophora behaviours
+        """
+        self.__behaviours = ['tentacle capture', 'not social'
+                                                 'lack of brain', 'solitary']
+        print(f'{self.__behaviours}')
+
+    def traits(self):
+        """
+        Ctenophora traits
+        """
+        self.__traits = ['eight rows if ciliary combs', 'biradial',
+                         'bioluminescence', 'clear gelatinous body']
+        print(f'{self.__traits}')
