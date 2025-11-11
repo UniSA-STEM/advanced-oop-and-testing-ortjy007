@@ -14,6 +14,7 @@ import pickle
 import date_validation
 import print_report
 import reports
+import pos_dig_val
 from pprint import pprint
 
 
@@ -37,27 +38,38 @@ class Animal(ABC):
     diet: int = 1 (Omnivore)
     dob: str = 2020-01-01 (Default)
     age: YYYY (calculated from dod to today's date)
+    health: bool
+    injury: bool
+    treatment: bool
 
     Methods w/decorators (all validating input):
     +name @property getter + setter
     +species @property getter + setter
-    +diet @property getter + setter
     +dob @property getter + setter
+    +diet @property getter + setter
+    +health @property getter + setter
+    +injury @property getter + setter
+    +treatment @property getter + setter
 
     Abstract methods:
-    +health_report
+    +health_comments
     +actions
     +behaviours
     +traits
+
+    External modules used (purposedly created):
+    +date_validation
+
     """
     DIET = {1: 'Omnivore',
             2: 'Herbivore',
-            3: 'Carnivore'}
+            3: 'Carnivore'
+            }
     ANIMAL_ID = 0
     ANIMAL_INVENTORY = []
 
     def __init__(self, name: str, species: str, diet=1, dob='2020-01-01',
-                 health=True, injury=False, treatment=False):
+                 health=True, injury=False, treatment=False, min_encl_size=0):
         self.__name = name
         self.__species = species
         self.__dob = dob
@@ -65,7 +77,9 @@ class Animal(ABC):
         self.__health = health
         self.__injury = injury
         self.__treatment = treatment
+        self.__min_encl_size = min_encl_size
         self.__age = 0
+
         self.ANIMAL_ID += 1
         Animal.ANIMAL_INVENTORY.append(self)
         print('100% StarDust: Zoo Management Software (ZMS).\n')
@@ -213,7 +227,11 @@ class Animal(ABC):
 
     @health.setter
     def health(self, health: bool) -> None:
-        self.__health = health
+        # Simple boolean operation to invert value
+        if not health:
+            self.__health = True
+        else:
+            self.__health = False
 
     @property
     def injury(self) -> bool:
@@ -222,7 +240,11 @@ class Animal(ABC):
 
     @injury.setter
     def injury(self, injury: bool) -> None:
-        self.__injury = injury
+        # Simple boolean operation to invert value
+        if not injury:
+            self.__injury = True
+        else:
+            self.__injury = False
 
     @property
     def treatment(self) -> bool:
@@ -231,7 +253,22 @@ class Animal(ABC):
 
     @treatment.setter
     def treatment(self, treatment: bool) -> None:
-        self.__treatment = treatment
+
+        # Simple boolean operation to invert value
+        if not treatment:
+            self.__treatment = True
+        else:
+            self.__treatment = False
+
+
+    @property
+    def min_encl_size(self) -> float:
+        """min_encl_size property"""
+        return self.__min_encl_size
+
+    @min_encl_size.setter
+    def min_encl_size(self, min_encl_size: float) -> None:
+        self.__min_encl_size = pos_dig_val.digit_val_float(min_encl_size)
 
     @abstractmethod
     def health_comments(self):
@@ -251,6 +288,35 @@ class Animal(ABC):
 
 
 class Mammal(Animal):
+    """"
+    Concrete Class Mammal, child class of Animal containing Vertebrae
+    Mammalians. Around 6,640 documented species.
+
+    Class Attributes:
+    CLASS: Mammalia
+    ORIGIN: dictionary with the 4 possible origins.
+    MAMMAL_ID: Unique sequential number for each individual mammal.
+    MAMMAL_INVENTORY: List of all mammals created using this class.
+
+    Attributes:
+    As inherited from Animal Class plus:
+    +Origin: int
+
+    Methods:
+    As inherited from Animal Class plus:
+    +print_dietary_comments
+    +print_health report
+
+    Static Method:
+    Particular to Mammals:
+    +Suckling
+
+
+    External modules used (purposedly created):
+    +date_validation
+    +reports
+    +print_reports
+    """
     CLASS = 'Mammalia'
     ORIGIN = {1: 'Wild Captured',
               2: 'Bred Locally',
@@ -259,8 +325,10 @@ class Mammal(Animal):
     MAMMAL_ID = 0
     MAMMAL_INVENTORY = []
 
-    def __init__(self, name, species, diet, dob, health, injury, treatment, origin=2):
-        super().__init__(name, species, diet, dob, health, injury, treatment)
+    def __init__(self, name, species, diet, dob, health, injury, treatment,
+                 min_encl_size,origin=2, sleep=False):
+        super().__init__(name, species, diet, dob, health, injury, treatment,
+                         min_encl_size)
         self.__class_ = Mammal.CLASS
         self.__origin = origin
         self.__dietary_comments = {}
@@ -269,7 +337,8 @@ class Mammal(Animal):
         self.__behaviours = []
         self.__traits = []
         self.__own_sound = ''
-        self.__sleep = False
+        self.__sleep = sleep
+
         self.MAMMAL_ID += 1
         Mammal.MAMMAL_INVENTORY.append(self)
 
@@ -287,7 +356,9 @@ class Mammal(Animal):
                 f'health = {2},'
                 f'injury = {False},'
                 f'treatment = {True},'
-                f'origin= {2})')
+                f'origin= {2})'
+                f'sleep= {False}'
+                )
 
     @property
     def origin(self) -> int:
@@ -315,18 +386,22 @@ class Mammal(Animal):
             try:
                 if origin == 0 or origin == '' or type(origin) == True:
                     origin = input(f'Please enter a valid input.\n'
-                                   f'Input needs to be between 1 and {no_origins}: ')
+                                   f'Input needs to be between 1 and '
+                                   f'{no_origins}: ')
                 origin = int(origin)
                 if 1 <= origin <= no_origins:
-                    print(f"{self.name}'s origin has been changed to {Mammal.ORIGIN[origin]}\n")
+                    print(f"{self.name}'s origin has been changed "
+                          f"to {Mammal.ORIGIN[origin]}\n")
                     self.__origin = origin
                     # If successful, exit
                     break
                 else:
                     origin = input(f'Please enter a valid input.\n'
-                                   f'Input needs to be between 1 and {no_origins}: ')
+                                   f'Input needs to be between 1 and '
+                                   f'{no_origins}: ')
             except ValueError:
-                print(f"Error.\nOnly integers between 1 and {no_origins} are valid.")
+                print(f"Error.\nOnly integers between 1 and {no_origins} "
+                      f"are valid.")
                 origin = input('Please try again: ')
 
     @property
@@ -390,7 +465,8 @@ class Mammal(Animal):
         :return: None
         """
         health_format = reports.formats_available(3)
-        self.__health_comments = reports.extended_report(self.name, 3, 'health report')
+        self.__health_comments = reports.extended_report(self.name, 3,
+                                                         'health report')
 
         # Writing an external file for reference
         file_name = f'{self.name}_health_report'
@@ -405,19 +481,27 @@ class Mammal(Animal):
         print(f"{self.name}'s health report:")
         print_report.print_b(self.__health_comments)
 
+    @staticmethod
+    def suckling() -> None:
+        """
+        Mammals particularity
+        :return: None
+        """
+        print('... having a nurturing breakfast...')
+
     def actions(self):
         """
         Mammal actions
         """
         self.__actions = ['give birth to live of springs']
-        print(f'{self.__actions }')
+        print(f'{self.__actions}')
 
     def behaviours(self):
         """
         Mammal behaviours
         """
         self.__behaviours = ['social bonding', 'communications through '
-                             'vocalizations and scent', 'territorial']
+                                               'vocalizations and scent', 'territorial']
         print(f'{self.__behaviours}')
 
     def traits(self):
@@ -430,6 +514,34 @@ class Mammal(Animal):
 
 
 class Aves(Animal):
+    """"
+    Concrete Class Aves, child class of Animal containing warm-blooded
+    theropod dinosaurs commonly called Birds. Around 11,000 documented species.
+
+    Class Attributes:
+    CLASS: Aves
+    ORIGIN: dictionary with the 4 possible origins.
+    AVES_ID: Unique sequential number for each individual birds.
+    AVES_INVENTORY: List of all birds created using this class.
+
+    Attributes:
+    As inherited from Animal Class plus:
+    +Origin: int
+
+    Methods:
+    As inherited from Animal Class plus:
+    +print_dietary_comments
+    +print_health report
+
+    Static Method:
+    Particular to Aves:
+    +Flying
+
+    External modules used (purposedly created):
+    +date_validation
+    +reports
+    +print_reports
+    """
     CLASS = 'Aves'
     ORIGIN = {1: 'Wild Captured',
               2: 'Bred Locally',
@@ -438,8 +550,10 @@ class Aves(Animal):
     AVES_ID = 0
     AVES_INVENTORY = []
 
-    def __init__(self, name, species, diet, dob, health, injury, treatment, origin=2):
-        super().__init__(name, species, diet, dob, health, injury, treatment)
+    def __init__(self, name, species, diet, dob, health, injury, treatment,
+                 min_encl_size, origin=2, sleep=False):
+        super().__init__(name, species, diet, dob, health, injury, treatment,
+                         min_encl_size)
         self.__class_ = Aves.CLASS
         self.__origin = origin
         self.__dietary_comments = {}
@@ -448,7 +562,8 @@ class Aves(Animal):
         self.__behaviours = []
         self.__traits = []
         self.__own_sound = ''
-        self.__sleep = False
+        self.__sleep = sleep
+
         self.AVES_ID += 1
         Aves.AVES_INVENTORY.append(self)
 
@@ -466,7 +581,9 @@ class Aves(Animal):
                 f'health = {2},'
                 f'injury = {False},'
                 f'treatment = {True},'
-                f'origin= {2})')
+                f'origin= {2})'
+                f'sleep = {False}'
+                )
 
     @property
     def origin(self) -> int:
@@ -569,7 +686,8 @@ class Aves(Animal):
         :return: None
         """
         health_format = reports.formats_available(3)
-        self.__health_comments = reports.extended_report(self.name, 3, 'health report')
+        self.__health_comments = reports.extended_report(self.name, 3,
+                                                         'health report')
 
         # Writing an external file for reference
         file_name = f'{self.name}_health_report'
@@ -584,19 +702,27 @@ class Aves(Animal):
         print(f"{self.name}'s health report:")
         print_report.print_b(self.__health_comments)
 
+    @staticmethod
+    def flying():
+        """
+        Aves particularity
+        :return: None
+        """
+        print('... looking at the world from above...')
+
     def actions(self):
         """
         Aves actions
         """
-        self.__actions = ['flight', 'perching', 'preening' ]
-        print(f'{self.__actions }')
+        self.__actions = ['flight', 'perching', 'preening']
+        print(f'{self.__actions}')
 
     def behaviours(self):
         """
         Aves behaviours
         """
         self.__behaviours = ['cooperative breeding', 'social learning'
-                             'pair bonds', 'flocking']
+                                                     'pair bonds', 'flocking']
         print(f'{self.__behaviours}')
 
     def traits(self):
@@ -609,6 +735,34 @@ class Aves(Animal):
 
 
 class Reptilia(Animal):
+    """"
+    Concrete Class Reptilia, child class of Animal containing Vertebrae
+    Reptiles. Around 12,000 documented species.
+
+    Class Attributes:
+    CLASS: Reptilia
+    ORIGIN: dictionary with the 4 possible origins.
+    REPTILE_ID: Unique sequential number for each individual reptile.
+    REPTILE_INVENTORY: List of all reptiles created using this class.
+
+    Attributes:
+    As inherited from Animal Class plus:
+    +Origin: int
+
+    Methods:
+    As inherited from Animal Class plus:
+    +print_dietary_comments
+    +print_health report
+
+    Static Method:
+    Particular to Reptiles:
+    +basking
+
+    External modules used (purposedly created):
+    +date_validation
+    +reports
+    +print_reports
+    """
     CLASS = 'Reptilia'
     ORIGIN = {1: 'Wild Captured',
               2: 'Bred Locally',
@@ -617,8 +771,10 @@ class Reptilia(Animal):
     REPTILE_ID = 0
     REPTILE_INVENTORY = []
 
-    def __init__(self, name, species, diet, dob, health, injury, treatment, origin=2):
-        super().__init__(name, species, diet, dob, health, injury, treatment)
+    def __init__(self, name, species, diet, dob, health, injury, treatment,
+                 min_encl_size, origin=2, sleep=False):
+        super().__init__(name, species, diet, dob, health, injury, treatment,
+                         min_encl_size)
         self.__class_ = Reptilia.CLASS
         self.__origin = origin
         self.__dietary_comments = {}
@@ -627,7 +783,8 @@ class Reptilia(Animal):
         self.__behaviours = []
         self.__traits = []
         self.__own_sound = ''
-        self.__sleep = False
+        self.__sleep = sleep
+
         self.REPTILE_ID += 1
         Reptilia.REPTILE_INVENTORY.append(self)
 
@@ -635,7 +792,8 @@ class Reptilia(Animal):
         return (f'Class: {Reptilia.CLASS}\n'
                 f'{super().__str__()}'
                 f'Reptile ID: {self.REPTILE_ID:04d}\n'
-                f'Origin: {Reptilia.ORIGIN[int(self.__origin)]}')
+                f'Origin: {Reptilia.ORIGIN[int(self.__origin)]}'
+                )
 
     def __repr__(self):
         return (f'Reptilia(name= {self.name},'
@@ -645,7 +803,9 @@ class Reptilia(Animal):
                 f'health = {2},'
                 f'injury = {False},'
                 f'treatment = {True},'
-                f'origin= {2})')
+                f'origin= {2})'
+                f'sleep= {False}'
+                )
 
     @property
     def origin(self) -> int:
@@ -673,18 +833,22 @@ class Reptilia(Animal):
             try:
                 if origin == 0 or origin == '' or type(origin) == True:
                     origin = input(f'Please enter a valid input.\n'
-                                   f'Input needs to be between 1 and {no_origins}: ')
+                                   f'Input needs to be between 1 '
+                                   f'and {no_origins}: ')
                 origin = int(origin)
                 if 1 <= origin <= no_origins:
-                    print(f"{self.name}'s origin has been changed to {Reptilia.ORIGIN[origin]}\n")
+                    print(f"{self.name}'s origin has been changed "
+                          f"to {Reptilia.ORIGIN[origin]}\n")
                     self.__origin = origin
                     # If successful, exit
                     break
                 else:
                     origin = input(f'Please enter a valid input.\n'
-                                   f'Input needs to be between 1 and {no_origins}: ')
+                                   f'Input needs to be between 1 '
+                                   f'and {no_origins}: ')
             except ValueError:
-                print(f"Error.\nOnly integers between 1 and {no_origins} are valid.")
+                print(f"Error.\nOnly integers between 1 and {no_origins} "
+                      f"are valid.")
                 origin = input('Please try again: ')
 
     @property
@@ -748,7 +912,8 @@ class Reptilia(Animal):
         :return: None
         """
         health_format = reports.formats_available(3)
-        self.__health_comments = reports.extended_report(self.name, 3, 'health report')
+        self.__health_comments = reports.extended_report(self.name, 3,
+                                                         'health report')
 
         # Writing an external file for reference
         file_name = f'{self.name}_health_report'
@@ -763,11 +928,20 @@ class Reptilia(Animal):
         print(f"{self.name}'s health report:")
         print_report.print_b(self.__health_comments)
 
+    @staticmethod
+    def basking():
+        """
+        Reptiles particularity
+        :return: None
+        """
+        print('... hopefully from direct sunlight...')
+
     def actions(self):
         """
         Reptile actions
         """
-        self.__actions = ['aggressive hunters', 'threat displays', 'physical defense']
+        self.__actions = ['aggressive hunters', 'threat displays',
+                          'physical defense']
         print(f'{self.__actions}')
 
     def behaviours(self):
@@ -775,7 +949,7 @@ class Reptilia(Animal):
         Reptile behaviours
         """
         self.__behaviours = ['thermoregulation', 'defensive displays'
-                                                 'mostly solitary', 'group hibernation']
+                             'mostly solitary', 'group hibernation']
         print(f'{self.__behaviours}')
 
     def traits(self):
@@ -788,6 +962,34 @@ class Reptilia(Animal):
 
 
 class Ctenophora(Animal):
+    """"
+    Concrete Class Ctenophora, child class of Animal containing marine invertebrates,
+    commonly known as comb jellies. Around 186 documented species.
+
+    Class Attributes:
+    CLASS: Ctenophora
+    ORIGIN: dictionary with the 4 possible origins.
+    CTENOPHORA_ID: Unique sequential number for each individual Ctenophora.
+    CTENOPHORA_INVENTORY: List of all Ctenophorae created using this class.
+
+    Attributes:
+    As inherited from Animal Class plus:
+    +Origin: int
+
+    Methods:
+    As inherited from Animal Class plus:
+    +print_dietary_comments
+    +print_health report
+
+    Static Method:
+    Particular to Aves:
+    +drifting
+
+    External modules used (purposedly created):
+    +date_validation
+    +reports
+    +print_reports
+    """
     CLASS = 'Ctenophora'
     ORIGIN = {1: 'Wild Captured',
               2: 'Bred Locally',
@@ -796,8 +998,10 @@ class Ctenophora(Animal):
     CTENOPHORA_ID = 0
     CTENOPHORA_INVENTORY = []
 
-    def __init__(self, name, species, diet, dob, health, injury, treatment, origin=2):
-        super().__init__(name, species, diet, dob, health, injury, treatment)
+    def __init__(self, name, species, diet, dob, health, injury, treatment,
+                 min_encl_size, origin=2):
+        super().__init__(name, species, diet, dob, health, injury, treatment,
+                         min_encl_size)
         self.__class_ = Ctenophora.CLASS
         self.__origin = origin
         self.__dietary_comments = {}
@@ -807,6 +1011,7 @@ class Ctenophora(Animal):
         self.__traits = []
         self.__own_sound = ''
         self.__sleep = False
+
         self.CTENOPHORA_ID += 1
         Ctenophora.CTENOPHORA_INVENTORY.append(self)
 
@@ -852,18 +1057,22 @@ class Ctenophora(Animal):
             try:
                 if origin == 0 or origin == '' or type(origin) == True:
                     origin = input(f'Please enter a valid input.\n'
-                                   f'Input needs to be between 1 and {no_origins}: ')
+                                   f'Input needs to be between 1 '
+                                   f'and {no_origins}: ')
                 origin = int(origin)
                 if 1 <= origin <= no_origins:
-                    print(f"{self.name}'s origin has been changed to {Ctenophora.ORIGIN[origin]}\n")
+                    print(f"{self.name}'s origin has been changed "
+                          f"to {Ctenophora.ORIGIN[origin]}\n")
                     self.__origin = origin
                     # If successful, exit
                     break
                 else:
                     origin = input(f'Please enter a valid input.\n'
-                                   f'Input needs to be between 1 and {no_origins}: ')
+                                   f'Input needs to be between 1 '
+                                   f'and {no_origins}: ')
             except ValueError:
-                print(f"Error.\nOnly integers between 1 and {no_origins} are valid.")
+                print(f"Error.\nOnly integers between 1 and {no_origins} "
+                      f"are valid.")
                 origin = input('Please try again: ')
 
     @property
@@ -927,7 +1136,8 @@ class Ctenophora(Animal):
         :return: None
         """
         health_format = reports.formats_available(3)
-        self.__health_comments = reports.extended_report(self.name, 3, 'health report')
+        self.__health_comments = reports.extended_report(self.name, 3,
+                                                         'health report')
 
         # Writing an external file for reference
         file_name = f'{self.name}_health_report'
@@ -942,11 +1152,20 @@ class Ctenophora(Animal):
         print(f"{self.name}'s health report:")
         print_report.print_b(self.__health_comments)
 
+    @staticmethod
+    def drifting():
+        """
+        Ctenophora particularity
+        :return: None
+        """
+        print('... looking at the world from below... quietly')
+
     def actions(self):
         """
         Ctenophora actions
         """
-        self.__actions = ['cilia-powered movement', 'maintain orientation', 'passive drifting']
+        self.__actions = ['cilia-powered movement', 'maintain orientation',
+                          'passive drifting']
         print(f'{self.__actions}')
 
     def behaviours(self):
@@ -954,7 +1173,7 @@ class Ctenophora(Animal):
         Ctenophora behaviours
         """
         self.__behaviours = ['tentacle capture', 'not social'
-                                                 'lack of brain', 'solitary']
+                             'lack of brain', 'solitary']
         print(f'{self.__behaviours}')
 
     def traits(self):

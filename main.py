@@ -1,74 +1,82 @@
-'''
-File: filename.py
-Description: A brief description of this Python module.
-Author: Billy Bizilis
-ID: 110100110
-Username: bizvy001
-This is my own work as defined by the University's Academic Integrity Policy.
-'''
+# File          : main.py
+# Author        : Jorge Ortega
+# Email id      : ortjy007@mymail.unisa.edu.au
+# Description   : COMP 1048 advanced-oop-and-testing Assignment 2
+#
+# This is my own work as defined by the University's
+# Academic Misconduct policy.
+#
+import pickle
+import print_report
+import pprint
+from animal import Aves
+from animal import Reptilia
+from animal import Mammal
+from animal import Ctenophora
 
-# Question 1
-# Provide your Helmet class below. It should work with the following Armor class:
+# Animal testing: Mammals
+Tigger = Mammal('Tigger', 'Panthera Tigris', 3, '2020-03-02', {}, False, False, 2)
+King_Julian = Mammal('King Julian', 'Lemur Catta', 1, '2022-06-03',{}, True, False, 1)
+Marlene = Mammal('Marlene', 'Lutra Lutra', 3, '2016-11-24', {}, False,True, 4)
 
-from abc import ABC, abstractmethod
+# Animal testing: Reptilia
+Cody = Reptilia('Cody','Varanus Komodoensis', 1,'2011-02-22',{}, False, False,3)
 
-class Armour(ABC):
-    def __init__(self, material, defence, toughness, durability):
-        self.__material = material
-        self.__defence = defence
-        self.__toughness = toughness
-        self.__durability = durability
-        print('0')
-        self.__protection = self.calculate_protection()
+# Animal testing: Aves
+Kowalski = Aves('Kowalski','Aptenodytes patagonicus', 3, '2014-08-30',{},True,True ,1 )
 
-    @abstractmethod
-    def calculate_protection(self):
-        print('1')
-        pass
+# Animal testing: Ctenophora
+Squshy = Ctenophora('Squshy', 'Mertensia ovum', 1, '2025-01-03', {}, False, False,1)
 
-    def reduce_durability(self, amount):
-        print(amount)
-        print('2')
-        self.__durability -= amount
-        if self.__durability < 0:
-            self.__durability = 0
-        self.__protection = self.calculate_protection()
+# Print animals
+# Tigger details str
+print(Tigger)
+print()
+print(Cody)
+print()
+print(Kowalski)
+print()
+print(Squshy)
 
-    def repair(self, amount):
-        self.__durability += amount
+# Tigger details str
+print(King_Julian)
+print()
 
-    def is_broken(self):
-        return self.__durability == 0
+# Tigger details str
+print(Marlene)
+print()
 
-    def get_defence(self):
-        return self.__defence
+current = Mammal.MAMMAL_INVENTORY
+pprint.pprint(current)
 
-    def get_toughness(self):
-        return self.__toughness
+"""
+# Tigger details str
+print(Tigger)
 
-    def get_durability(self):
-        return self.__durability
+# 1 Tigger Origin
+print(Tigger.origin)
 
-    defence = property(get_defence)
-    toughness = property(get_toughness)
-    durability = property(get_durability)
+# Changing Tiggers origin
+Tigger.origin = 1
 
-    def __str__(self):
-        return f"---{self.__material.upper()} {self.__class__.__name__.upper()}---\nDefence:{self.__defence}\n" \
-               f"Toughness: {self.__toughness}\nDurability: {self.__durability}\n" \
-               f"{self.__class__.__name__} protection = {self.__protection}\n"
+# Confirmation of change
+print(Tigger.origin)
 
-# The armour class has been included to ensure you are testing the abstract methods.
+# 2 Tigger Own Sound
+print(Tigger.own_sound)
 
-class Helmet(Armour):
+# Changing Tigger sound
+Tigger.own_sound = 'boing, boing, boing'
 
-    def __init__(self, material, defence, toughness, durability):
-        super().__init__(material,defence,toughness,durability)
+# Confirmation of change
+print(Tigger.own_sound)
 
-    def calculate_protection(self):
-        print('3')
-        return self.toughness + self.__durability
+# 3 Tigger Sleeping
+print(Tigger.sleeping)
 
-helmet = Helmet("Steel", 100, 100, 50)
-helmet.reduce_durability(100)
-print(helmet)
+# Sending Tigger to bed
+Tigger.sleeping = True
+
+# Confirmation of change
+print(Tigger.sleeping)
+"""
