@@ -32,7 +32,7 @@ class Animal(ABC):
     ANIMAL_ID: Unique sequential number for each individual animal.
     ANIMAL_INVENTORY: List of all animals created using this class.
 
-    Attributes:
+    Attributes (self-explanatory):
     name: str
     species: str
     diet: int = 1 (Omnivore)
@@ -95,16 +95,25 @@ class Animal(ABC):
         return (f'Name: {self.__name}\n'
                 f'Species: \x1B[3m{self.__species}\x1B[0m\n'
                 f'Diet: {Animal.DIET[self.__diet]}\n'
+                f'Minium area/individual: {self.__min_encl_size}\n'
                 f'Health: {self.__health}\n'
                 f'Injuries: {self.__injury}\n'
                 f'In Treatment: {self.__treatment}\n'
                 f'DoB: {self.__dob}\n'
                 f'Age: {self.__age}\n'
-                f'Animal ID: {self.ANIMAL_ID:04d}\n')
+                f'Animal ID: {self.ANIMAL_ID:04d}\n'
+                )
 
-    def __repr__(self):
-        return (f'Animal(name= {self.__name}, species= {self.__species}, '
-                f'diet= {1}, dob= {'2020-01-01'}, health= {True}, injury= {False}, treatment= {False})')
+    def __repr__(self) -> str:
+        return (f'Animal(name= {self.__name}, '
+                f'species= {self.__species}, '
+                f'diet= {1}, '
+                f'dob= {'2020-01-01'}, '
+                f'health= {True}, '
+                f'injury= {False}, '
+                f'treatment= {False}, '
+                f'min encl size= {30}'
+                )
 
     @property
     def name(self) -> str:
@@ -323,10 +332,11 @@ class Mammal(Animal):
               3: 'Bred Elsewhere',
               4: 'On loan'}
     MAMMAL_ID = 0
-    MAMMAL_INVENTORY = []
+    MAMMAL_INVENTORY = []  # Including animals as instances
+    MAMMAL_DIRECTORY = []  # Including basic data as str
 
     def __init__(self, name, species, diet, dob, health, injury, treatment,
-                 min_encl_size,origin=2, sleep=False):
+                 min_encl_size,origin=2, sleep=False, enclosure='X1'):
         super().__init__(name, species, diet, dob, health, injury, treatment,
                          min_encl_size)
         self.__class_ = Mammal.CLASS
@@ -338,26 +348,38 @@ class Mammal(Animal):
         self.__traits = []
         self.__own_sound = ''
         self.__sleep = sleep
+        self.__enclosure = enclosure
 
-        self.MAMMAL_ID += 1
+        Mammal.MAMMAL_ID += 1
+        self.__ID = 'MAM' + str(f'{Mammal.MAMMAL_ID:03}')
+
+        basic_data = [f'Name: {self.name}  '
+                      f'ID: {self.__ID} '
+                      f'Class: {self.__class_}  '
+                      f'Species: {self.species} '
+                      f'Enclosure: {self.__enclosure}']
+
         Mammal.MAMMAL_INVENTORY.append(self)
+        Mammal.MAMMAL_DIRECTORY.append(basic_data)
 
     def __str__(self) -> str:
         return (f'Class: {Mammal.CLASS}\n'
                 f'{super().__str__()}'
-                f'Mammal ID: {self.MAMMAL_ID:04d}\n'
-                f'Origin: {Mammal.ORIGIN[int(self.__origin)]}')
+                f'Mammal ID: {self.__ID}\n'
+                f'Origin: {Mammal.ORIGIN[int(self.__origin)]}'
+                )
 
-    def __repr__(self):
-        return (f'Mammal(name= {self.name},'
-                f'species= {self.species},'
-                f'diet= {1},'
-                f'dob= {'2020-01-01'},'
-                f'health = {2},'
-                f'injury = {False},'
-                f'treatment = {True},'
-                f'origin= {2})'
-                f'sleep= {False}'
+    def __repr__(self) -> str:
+        return (f'name= {self.name}, '
+                f'species= {self.species}, '
+                f'diet= {1}, '
+                f'dob= {'2020-01-01'}, '
+                f'health = {2}, '
+                f'injury = {False}, '
+                f'treatment = {True}, '
+                f'origin= {2}, '
+                f'sleep= {False}, '
+                f'enclosure= {'X1'}'
                 )
 
     @property
@@ -436,6 +458,15 @@ class Mammal(Animal):
             print(f'{self.name} is asleep\n'
                   f'zzzzzzzz')
         self.__sleep = value
+
+    @property
+    def enclosure(self) -> str:
+        """Enclosure property"""
+        return self.__enclosure
+
+    @enclosure.setter
+    def enclosure(self, enclosure: str) -> None:
+        self.__enclosure = enclosure
 
     def dietary_comments(self):
         """
@@ -548,10 +579,11 @@ class Aves(Animal):
               3: 'Bred Elsewhere',
               4: 'On loan'}
     AVES_ID = 0
-    AVES_INVENTORY = []
+    AVES_INVENTORY = []  # Including animals as instances
+    AVES_DIRECTORY = []  # Including basic data as str
 
     def __init__(self, name, species, diet, dob, health, injury, treatment,
-                 min_encl_size, origin=2, sleep=False):
+                 min_encl_size, origin=2, sleep=False, enclosure='X1'):
         super().__init__(name, species, diet, dob, health, injury, treatment,
                          min_encl_size)
         self.__class_ = Aves.CLASS
@@ -563,26 +595,37 @@ class Aves(Animal):
         self.__traits = []
         self.__own_sound = ''
         self.__sleep = sleep
+        self.__enclosure = enclosure
 
-        self.AVES_ID += 1
+        Aves.AVES_ID += 1
+        self.__ID = 'AVE' + str(f'{Aves.AVES_ID:03}')
+
+        basic_data = [f'Name: {self.name}  '
+                      f'Class: {self.__class_}  '
+                      f'Species: {self.species} '
+                      f'Enclosure: {self.__enclosure}']
+
         Aves.AVES_INVENTORY.append(self)
+        Aves.AVES_DIRECTORY.append(basic_data)
 
     def __str__(self) -> str:
         return (f'Class: {Aves.CLASS}\n'
                 f'{super().__str__()}'
-                f'Reptile ID: {self.AVES_ID:04d}\n'
-                f'Origin: {Aves.ORIGIN[int(self.__origin)]}')
+                f'Reptile ID: {self.__ID}\n'
+                f'Origin: {Aves.ORIGIN[int(self.__origin)]}'
+                )
 
-    def __repr__(self):
-        return (f'Aves (name= {self.name},'
-                f'species= {self.species},'
-                f'diet= {1},'
-                f'dob= {'2020-01-01'},'
-                f'health = {2},'
-                f'injury = {False},'
-                f'treatment = {True},'
-                f'origin= {2})'
-                f'sleep = {False}'
+    def __repr__(self) -> str:
+        return (f'name= {self.name}, '
+                f'species= {self.species}, '
+                f'diet= {1}, '
+                f'dob= {'2020-01-01'}, '
+                f'health = {2}, '
+                f'injury = {False}, '
+                f'treatment = {True}, '
+                f'origin= {2}, '
+                f'sleep = {False}, '
+                f'enclosure= {'X1'}'
                 )
 
     @property
@@ -657,6 +700,15 @@ class Aves(Animal):
             print(f'{self.name} is asleep\n'
                   f'zzzzzzzz')
         self.__sleep = value
+
+    @property
+    def enclosure(self) -> str:
+        """Enclosure property"""
+        return self.__enclosure
+
+    @enclosure.setter
+    def enclosure(self, enclosure: str) -> None:
+        self.__enclosure = enclosure
 
     def dietary_comments(self):
         """
@@ -769,10 +821,12 @@ class Reptilia(Animal):
               3: 'Bred Elsewhere',
               4: 'On loan'}
     REPTILE_ID = 0
-    REPTILE_INVENTORY = []
+
+    REPTILE_INVENTORY = []  # Including animals as instances
+    REPTILE_DIRECTORY = []  # Including basic data as str
 
     def __init__(self, name, species, diet, dob, health, injury, treatment,
-                 min_encl_size, origin=2, sleep=False):
+                 min_encl_size, origin=2, sleep=False, enclosure='X1'):
         super().__init__(name, species, diet, dob, health, injury, treatment,
                          min_encl_size)
         self.__class_ = Reptilia.CLASS
@@ -784,27 +838,37 @@ class Reptilia(Animal):
         self.__traits = []
         self.__own_sound = ''
         self.__sleep = sleep
+        self.__enclosure = enclosure
 
-        self.REPTILE_ID += 1
-        Reptilia.REPTILE_INVENTORY.append(self)
+        Reptilia.REPTILE_ID += 1
+        self.__ID = 'REP' + str(f'{Reptilia.REPTILE_ID:03}')
+
+        basic_data = [f'Name: {self.name}  '
+                      f'Class: {self.__class_}  '
+                      f'Species: {self.species} '
+                      f'Enclosure: {self.__enclosure}']
+
+        Reptilia.REPTILE_DIRECTORY.append(self)
+        Reptilia.REPTILE_INVENTORY.append(basic_data)
 
     def __str__(self) -> str:
         return (f'Class: {Reptilia.CLASS}\n'
                 f'{super().__str__()}'
-                f'Reptile ID: {self.REPTILE_ID:04d}\n'
+                f'Reptile ID: {self.__ID}\n'
                 f'Origin: {Reptilia.ORIGIN[int(self.__origin)]}'
                 )
 
-    def __repr__(self):
-        return (f'Reptilia(name= {self.name},'
-                f'species= {self.species},'
-                f'diet= {1},'
-                f'dob= {'2020-01-01'},'
-                f'health = {2},'
-                f'injury = {False},'
-                f'treatment = {True},'
-                f'origin= {2})'
-                f'sleep= {False}'
+    def __repr__(self) -> str:
+        return (f'name= {self.name}, '
+                f'species= {self.species}, '
+                f'diet= {1}, '
+                f'dob= {'2020-01-01'}, '
+                f'health = {2}, '
+                f'injury = {False}, '
+                f'treatment = {True}, '
+                f'origin= {2}, '
+                f'sleep= {False}, '
+                f'enclosure= {'X1'}'
                 )
 
     @property
@@ -883,6 +947,15 @@ class Reptilia(Animal):
             print(f'{self.name} is asleep\n'
                   f'zzzzzzzz')
         self.__sleep = value
+
+    @property
+    def enclosure(self) -> str:
+        """Enclosure property"""
+        return self.__enclosure
+
+    @enclosure.setter
+    def enclosure(self, enclosure: str) -> None:
+        self.__enclosure = enclosure
 
     def dietary_comments(self):
         """
@@ -996,10 +1069,12 @@ class Ctenophora(Animal):
               3: 'Bred Elsewhere',
               4: 'On loan'}
     CTENOPHORA_ID = 0
-    CTENOPHORA_INVENTORY = []
+
+    CTENOPHORA_INVENTORY = []  # Including animals as instances
+    CTENOPHORA_DIRECTORY = []  # Including basic data as str
 
     def __init__(self, name, species, diet, dob, health, injury, treatment,
-                 min_encl_size, origin=2):
+                 min_encl_size, origin=2, enclosure='X1'):
         super().__init__(name, species, diet, dob, health, injury, treatment,
                          min_encl_size)
         self.__class_ = Ctenophora.CLASS
@@ -1010,26 +1085,36 @@ class Ctenophora(Animal):
         self.__behaviours = []
         self.__traits = []
         self.__own_sound = ''
-        self.__sleep = False
+        self.__enclosure = enclosure
 
-        self.CTENOPHORA_ID += 1
+        Ctenophora.CTENOPHORA_ID += 1
+        self.__ID = 'CTE' + str(f'{Ctenophora.CTENOPHORA_ID:03}')
+
+        basic_data = [f'Name: {self.name}  '
+                      f'Class: {self.__class_}  '
+                      f'Species: {self.species}'
+                      f'Enclosure: {self.__enclosure}']
+
         Ctenophora.CTENOPHORA_INVENTORY.append(self)
+        Ctenophora.CTENOPHORA_DIRECTORY.append(basic_data)
 
     def __str__(self) -> str:
         return (f'Class: {Ctenophora.CLASS}\n'
                 f'{super().__str__()}'
-                f'Ctenophora ID: {self.CTENOPHORA_ID:04d}\n'
+                f'Ctenophora ID: {self.__ID}\n'
                 f'Origin: {Ctenophora.ORIGIN[int(self.__origin)]}')
 
-    def __repr__(self):
-        return (f'Ctenophora(name= {self.name},'
-                f'species= {self.species},'
-                f'diet= {1},'
-                f'dob= {'2020-01-01'},'
-                f'health = {2},'
-                f'injury = {False},'
-                f'treatment = {True},'
-                f'origin= {2})')
+    def __repr__(self) -> str:
+        return (f'name= {self.name}, '
+                f'species= {self.species}, '
+                f'diet= {1}, '
+                f'dob= {'2020-01-01'}, '
+                f'health = {2}, '
+                f'injury = {False}, '
+                f'treatment = {True}, '
+                f'origin= {2},'
+                f'enclosure= {'X1'}'
+                )
 
     @property
     def origin(self) -> int:
@@ -1107,6 +1192,15 @@ class Ctenophora(Animal):
             print(f'{self.name} is asleep\n'
                   f'zzzzzzzz')
         self.__sleep = value
+
+    @property
+    def enclosure(self) -> str:
+        """Enclosure property"""
+        return self.__enclosure
+
+    @enclosure.setter
+    def enclosure(self, enclosure: str) -> None:
+        self.__enclosure = enclosure
 
     def dietary_comments(self):
         """
