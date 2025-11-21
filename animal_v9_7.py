@@ -1032,4 +1032,3 @@ class Reptilia(Chordata):
         self.__traits = 'ectothermic', 'dry-scaly skin', 'have lungs for breathing', 'tetrapods'
         print(f'{self.name} aves traits include:\n{', '.join(self.__traits)}\n')
 
-m1 =  Mammal('Tigger', 'Panthera Tigris', 'D1', 'H1','J1', 'T0', 50,'2020-03-02','A1','R1',False,'ZooE_Z0_001')

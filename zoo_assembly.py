@@ -38,10 +38,7 @@ CURRENT_ENCLOSURES = {}
 
 # Populating containers
 CURRENT_STAFF = staff_current.pickle_import()
-
 CURRENT_ANIMALS = animals_current.pickle_import()
-CURRENT_HEALTH_REPORTS =
-
 CURRENT_ENCLOSURES = enclosure_current.pickle_import()
 
 # Coupling animals, enclosures and staff
